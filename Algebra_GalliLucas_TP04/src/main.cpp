@@ -12,8 +12,6 @@ enum class changeFrustum
 	Fov,
 	Near,
 	Far,
-	Width,
-	Height
 };
 
 void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, float delta);
@@ -133,14 +131,6 @@ void input(changeFrustum& currentState, bool& shouldDrawControls)
 	{
 		currentState = changeFrustum::Far;
 	}
-	else if (IsKeyDown(KEY_U) || IsKeyDown(KEY_J))
-	{
-		currentState = changeFrustum::Width;
-	}
-	else if (IsKeyDown(KEY_I) || IsKeyDown(KEY_K))
-	{
-		currentState = changeFrustum::Height;
-	}
 	else
 	{
 		currentState = changeFrustum::None;
@@ -199,36 +189,6 @@ void changeFrustumValues(frustum::Frustum& frustum, changeFrustum currentState, 
 			}
 			break;
 
-		case changeFrustum::Width:
-			if (IsKeyDown(KEY_U))
-			{
-				change += changePerFrame * delta;
-			}
-			else if (IsKeyDown(KEY_J))
-			{
-				change -= changePerFrame * delta;
-			}
-			if (frustum.width + change * 100 > 0.0f)
-			{
-				frustum.width += change * 100;
-			}
-			break;
-
-		case changeFrustum::Height:
-			if (IsKeyDown(KEY_I))
-			{
-				change += changePerFrame * delta;
-			}
-			else if (IsKeyDown(KEY_K))
-			{
-				change -= changePerFrame * delta;
-			}
-			if (frustum.height + change * 100 > 0.0f)
-			{
-				frustum.height += change * 100;
-			}
-			break;
-
 		default:
 			break;
 		}
@@ -283,12 +243,6 @@ void drawControls(changeFrustum currentState)
 	case changeFrustum::Far:
 		farColor = GREEN;
 		break;
-	case changeFrustum::Width:
-		widthColor = GREEN;
-		break;
-	case changeFrustum::Height:
-		heightColor = GREEN;
-		break;
 	default:
 		break;
 	}
@@ -296,8 +250,6 @@ void drawControls(changeFrustum currentState)
 	DrawText("R AND F select FOV", 40, 160, 20, fovColor);
 	DrawText("T AND G select Near", 40, 190, 20, nearColor);
 	DrawText("Y AND H select far", 40, 220, 20, farColor);
-	DrawText("U AND J select width", 40, 250, 20, widthColor);
-	DrawText("I AND K select height", 40, 280, 20, heightColor);
 }
 
 void drawWorldLines(Vector3 origin)
