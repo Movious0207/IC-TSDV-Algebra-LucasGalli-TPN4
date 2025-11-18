@@ -19,7 +19,6 @@ enum class changeFrustum
 void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, float delta);
 void drawControls(changeFrustum currentState);
 void drawWorldLines(Vector3 origin);
-void figuresUpdate(std::vector<figure::Figure*> figures, int maxFigures);
 void figuresDraw(std::vector<figure::Figure*> figures, int maxFigures);
 void input(changeFrustum& currentState, bool& shouldDrawControls);
 void changeFrustumValues(frustum::Frustum& frustum, changeFrustum currentState, float delta);
@@ -34,23 +33,23 @@ int main()
 	int maxFigures = 0;
 	std::vector<figure::Figure*> figures;
 
-	figures.push_back(new figure::Figure("Cube", "res/models/cube.obj", { 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, WHITE));
+	figures.push_back(new figure::Figure("Cube", "res/models/cube.obj", { 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, RED));
 	maxFigures++;
 
-	figures.push_back(new figure::Figure("Deca", "res/models/decahedron.obj", { 3.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, WHITE));
+	figures.push_back(new figure::Figure("Dodeca", "res/models/dodecahedron.obj", { 3.0f,0.0f,-4.0f }, { 1.0f,1.0f,1.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, BLUE));
 	maxFigures++;
 
-	figures.push_back(new figure::Figure("Octa", "res/models/octahedron.obj", { -3.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, WHITE));
+	figures.push_back(new figure::Figure("Tetra", "res/models/tetrahedron.obj", { -3.0f,0.0f,3.0f }, { 2.0f,2.0f,2.0f }, { 0.0f,0.0f, 0.0f }, 0.05f * RAD2DEG, GRAY));
 	maxFigures++;
 
 	Vector3 origin = { 0,0,0 };
 	Camera3D camera = { 0 };
 
-	camera.position = { cameraDistance, cameraDistance, cameraDistance };  // Camera position
-	camera.target = origin;						// Camera looking at point
-	camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-	camera.fovy = 45.0f;                                // Camera field-of-view Y
-	camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
+	camera.position = { cameraDistance, cameraDistance, cameraDistance }; 
+	camera.target = origin;					
+	camera.up = { 0.0f, 1.0f, 0.0f };   
+	camera.fovy = 45.0f;              
+	camera.projection = CAMERA_PERSPECTIVE; 
 
 	changeFrustum currentState = changeFrustum::None;
 	bool shouldDrawControls = true;
@@ -69,7 +68,6 @@ int main()
 		cameraMove(camera, frustum, isCursorOn, delta);
 		input(currentState, shouldDrawControls);
 		frustum.updatePos(camera);
-		figuresUpdate(figures, maxFigures);
 		frustum.update(figures, maxFigures);
 		changeFrustumValues(frustum, currentState, delta);
 
@@ -93,7 +91,7 @@ int main()
 		DrawLine3D(frustum.vertices[2], frustum.vertices[6], GREEN);
 		DrawLine3D(frustum.vertices[3], frustum.vertices[7], GREEN);
 
-		ClearBackground(BLACK);
+		ClearBackground(WHITE);
 
 		drawWorldLines(origin);
 		figuresDraw(figures, maxFigures);
@@ -101,8 +99,8 @@ int main()
 
 		EndMode3D();
 
-		DrawText("TAB toggle controls", 40, 720 - 40, 20, WHITE);
-		DrawText("ALT toggle camera move", 40, 720 - 70, 20, WHITE);
+		DrawText("TAB toggle controls", 40, 720 - 40, 20, BLACK);
+		DrawText("ALT toggle camera move", 40, 720 - 70, 20, BLACK);
 
 		if (shouldDrawControls)
 		{
@@ -123,23 +121,23 @@ void input(changeFrustum& currentState, bool& shouldDrawControls)
 		shouldDrawControls = !shouldDrawControls;
 	}
 
-	if (IsKeyDown(KEY_C))
+	if (IsKeyDown(KEY_R) || IsKeyDown(KEY_F))
 	{
 		currentState = changeFrustum::Fov;
 	}
-	else if (IsKeyDown(KEY_N))
+	else if (IsKeyDown(KEY_T) || IsKeyDown(KEY_G))
 	{
 		currentState = changeFrustum::Near;
 	}
-	else if (IsKeyDown(KEY_F))
+	else if (IsKeyDown(KEY_Y) || IsKeyDown(KEY_H))
 	{
 		currentState = changeFrustum::Far;
 	}
-	else if (IsKeyDown(KEY_V))
+	else if (IsKeyDown(KEY_U) || IsKeyDown(KEY_J))
 	{
 		currentState = changeFrustum::Width;
 	}
-	else if (IsKeyDown(KEY_H))
+	else if (IsKeyDown(KEY_I) || IsKeyDown(KEY_K))
 	{
 		currentState = changeFrustum::Height;
 	}
@@ -156,55 +154,85 @@ void changeFrustumValues(frustum::Frustum& frustum, changeFrustum currentState, 
 		float change = 0.0f;
 		const float changePerFrame = 1.0f;
 
-		if (IsKeyDown(KEY_KP_ADD))
+		switch (currentState)
 		{
-			change += changePerFrame * delta;
-		}
-		else if (IsKeyDown(KEY_KP_SUBTRACT))
-		{
-			change -= changePerFrame * delta;
-		}
 
-		if (change != 0)
-		{
-			switch (currentState)
+		case changeFrustum::Fov:
+			if (IsKeyDown(KEY_R))
 			{
-			case changeFrustum::Fov:
-				frustum.fov += change;
-				break;
-
-			case changeFrustum::Near:
-				if (frustum.near + change >= 0.05 && frustum.near + change < frustum.far)
-				{
-					frustum.near += change;
-				}
-				break;
-
-			case changeFrustum::Far:
-				if (frustum.far + change >= 0.05 && frustum.far + change > frustum.near)
-				{
-					frustum.far += change;
-				}
-				break;
-
-			case changeFrustum::Width:
-				if (frustum.width + change *100> 0.0f)
-				{
-					frustum.width += change * 100;
-				}
-				break;
-
-			case changeFrustum::Height:
-				if (frustum.height + change * 100 > 0.0f)
-				{
-					frustum.height += change * 100;
-				}
-				break;
-
-			default:
-				break;
+				change += changePerFrame * delta;
 			}
+			else if (IsKeyDown(KEY_F))
+			{
+				change -= changePerFrame * delta;
+			}
+			frustum.fov += change;
+			break;
+
+		case changeFrustum::Near:
+			if (IsKeyDown(KEY_T))
+			{
+				change += changePerFrame * delta;
+			}
+			else if (IsKeyDown(KEY_G))
+			{
+				change -= changePerFrame * delta;
+			}
+			if (frustum.near + change >= 0.05 && frustum.near + change < frustum.far)
+			{
+				frustum.near += change;
+			}
+			break;
+
+		case changeFrustum::Far:
+			if (IsKeyDown(KEY_Y))
+			{
+				change += changePerFrame * delta;
+			}
+			else if (IsKeyDown(KEY_H))
+			{
+				change -= changePerFrame * delta;
+			}
+			if (frustum.far + change >= 0.05 && frustum.far + change > frustum.near)
+			{
+				frustum.far += change;
+			}
+			break;
+
+		case changeFrustum::Width:
+			if (IsKeyDown(KEY_U))
+			{
+				change += changePerFrame * delta;
+			}
+			else if (IsKeyDown(KEY_J))
+			{
+				change -= changePerFrame * delta;
+			}
+			if (frustum.width + change * 100 > 0.0f)
+			{
+				frustum.width += change * 100;
+			}
+			break;
+
+		case changeFrustum::Height:
+			if (IsKeyDown(KEY_I))
+			{
+				change += changePerFrame * delta;
+			}
+			else if (IsKeyDown(KEY_K))
+			{
+				change -= changePerFrame * delta;
+			}
+			if (frustum.height + change * 100 > 0.0f)
+			{
+				frustum.height += change * 100;
+			}
+			break;
+
+		default:
+			break;
 		}
+	
 	}
 
 }
@@ -234,17 +262,15 @@ void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, f
 
 void drawControls(changeFrustum currentState)
 {
-	DrawText("WASD move camera", 40, 40, 20, WHITE);
-	DrawText("SPACE BAR camera up", 40, 70, 20, WHITE);
-	DrawText("CTRL camera down", 40, 100, 20, WHITE);
+	DrawText("WASD move camera", 40, 40, 20, BLACK);
+	DrawText("SPACE BAR camera up", 40, 70, 20, BLACK);
+	DrawText("CTRL camera down", 40, 100, 20, BLACK);
 
-	DrawText("+ & - (NUMPAD) change frustum values", 40, 130, 20, WHITE);
-
-	Color fovColor = WHITE;
-	Color nearColor = WHITE;
-	Color farColor = WHITE;
-	Color widthColor = WHITE;
-	Color heightColor = WHITE;
+	Color fovColor = BLACK;
+	Color nearColor = BLACK;
+	Color farColor = BLACK;
+	Color widthColor = BLACK;
+	Color heightColor = BLACK;
 
 	switch (currentState)
 	{
@@ -267,11 +293,11 @@ void drawControls(changeFrustum currentState)
 		break;
 	}
 
-	DrawText("C (HOLD) select FOV", 40, 160, 20, fovColor);
-	DrawText("N (HOLD) select Near", 40, 190, 20, nearColor);
-	DrawText("F (HOLD) select far", 40, 220, 20, farColor);
-	DrawText("V (HOLD) width", 40, 250, 20, widthColor);
-	DrawText("H (HOLD) height", 40, 280, 20, heightColor);
+	DrawText("R AND F select FOV", 40, 160, 20, fovColor);
+	DrawText("T AND G select Near", 40, 190, 20, nearColor);
+	DrawText("Y AND H select far", 40, 220, 20, farColor);
+	DrawText("U AND J select width", 40, 250, 20, widthColor);
+	DrawText("I AND K select height", 40, 280, 20, heightColor);
 }
 
 void drawWorldLines(Vector3 origin)
@@ -280,14 +306,6 @@ void drawWorldLines(Vector3 origin)
 	DrawLine3D(origin, { 10,0,0 }, RED);
 	DrawLine3D(origin, { 0,10,0 }, GREEN);
 	DrawLine3D(origin, { 0,0,10 }, BLUE);
-}
-
-void figuresUpdate(std::vector<figure::Figure*> figures, int maxFigures)
-{
-	for (int i = 0; i < maxFigures; i++)
-	{
-
-	}
 }
 
 void figuresDraw(std::vector<figure::Figure*> figures, int maxFigures)
